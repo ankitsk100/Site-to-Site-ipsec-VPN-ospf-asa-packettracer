@@ -15,7 +15,7 @@ This lab demonstrates a secure **Site-to-Site IPsec VPN** between **HQ** and **B
 ---
 
 ## Topology
-![Topology](docs/topology.png)
+![Topology](docs/Topology.png)
 
 **WAN**
 - HQ-FW ↔ ISP: `100.50.10.0/30`
