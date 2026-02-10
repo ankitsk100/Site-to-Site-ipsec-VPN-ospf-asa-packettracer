@@ -1,0 +1,54 @@
+! ==============================
+! HQ ASA 5506-X
+! Base Configuration
+! NAT + ACL + OSPF
+! ==============================
+
+enable
+configure terminal
+
+! ---------- INTERFACES ----------
+interface gig1/1
+ no shutdown
+ nameif OUTSIDE
+ security-level 0
+ ip address 100.50.10.2 255.255.255.252
+exit
+
+interface gig1/2
+ no shutdown
+ nameif INSIDE
+ security-level 100
+ ip address 10.10.10.2 255.255.255.252
+exit
+
+! ---------- NAT ----------
+object network NET1
+ subnet 192.168.1.0 255.255.255.0
+ nat (INSIDE,OUTSIDE) dynamic interface
+exit
+
+! ---------- ACL ----------
+access-list OUTSIDE_IN extended permit icmp any any
+access-list OUTSIDE_IN extended permit tcp any any eq 80
+access-list OUTSIDE_IN extended permit tcp any any eq 443
+access-group OUTSIDE_IN in interface OUTSIDE
+
+! ---------- ICMP INSPECTION ----------
+policy-map global_policy
+ class inspection_default
+  inspect icmp
+exit
+service-policy global_policy global
+
+! ---------- DEFAULT ROUTE ----------
+route OUTSIDE 0.0.0.0 0.0.0.0 100.50.10.1
+
+! ---------- OSPF ----------
+router ospf 10
+ router-id 1.1.1.6
+ network 100.50.10.0 255.255.255.252 area 0
+ network 10.10.10.0 255.255.255.252 area 0
+exit
+
+write memory
