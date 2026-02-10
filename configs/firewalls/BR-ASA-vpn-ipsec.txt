@@ -1,0 +1,35 @@
+! ======================================
+! Branch ASA - Site-to-Site IPsec VPN
+! ======================================
+
+! ---------- IKEv1 POLICY ----------
+crypto ikev1 policy 10
+ authentication pre-share
+ encryption 3des
+ hash sha
+ group 2
+ lifetime 86400
+exit
+
+! ---------- TUNNEL GROUP ----------
+tunnel-group 100.50.10.2 type ipsec-l2l
+tunnel-group 100.50.10.2 ipsec-attributes
+ ikev1 pre-shared-key cisco
+exit
+
+! ---------- TRANSFORM SET ----------
+crypto ipsec ikev1 transform-set TSET esp-3des esp-sha-hmac
+
+! ---------- VPN INTERESTING TRAFFIC ----------
+access-list VPN-ACL permit ip 192.168.2.0 255.255.255.0 192.168.1.0 255.255.255.0
+
+! ---------- CRYPTO MAP ----------
+crypto map CMAP 10 set peer 100.50.10.2
+crypto map CMAP 10 set ikev1 transform-set TSET
+crypto map CMAP 10 match address VPN-ACL
+crypto map CMAP interface OUTSIDE
+
+! ---------- ENABLE IKE ----------
+crypto ikev1 enable OUTSIDE
+
+write memory
